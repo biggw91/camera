@@ -67,7 +67,7 @@ camera/                                  ← Git 저장소 최상위
 
 | Phase | 내용 | 상태 |
 |---|---|---|
-| 1 | 개발환경 확인 | **진행 중** – PC에서 `check-env.bat` 실행 결과 필요 |
+| 1 | 개발환경 확인 | **완료** (2026-09-23) |
 | 2 | Spring Boot 서버 생성 | 대기 |
 | 3 | MySQL 연결 | 대기 |
 | 4 | Test Event API | 대기 |
@@ -80,6 +80,21 @@ camera/                                  ← Git 저장소 최상위
 | 11 | 관리자 화면 | 대기 |
 
 ---
+
+## Phase 1 결과 (개발 PC, 2026-09-23)
+
+| 항목 | 결과 | 비고 |
+|---|---|---|
+| OS | Windows 11 Pro (64비트) | |
+| Java / javac | 17.0.12 | Spring Boot 3 사용 가능 |
+| JAVA_HOME | 미설정 | Phase 2 전에 설정 권장 |
+| Node.js / npm | v22.21.1 / 10.9.4 | 현재 계획에서는 사용 안 함 |
+| MySQL | 8.0 서버 실행 중 (`MySQL80`) | `mysql.exe` 는 PATH 미등록 (문제 없음) |
+| Docker | 없음 | MySQL 직접 설치로 대체 → 불필요 |
+| Git | 2.54.0 | |
+| Maven / Gradle | 없음 | Maven Wrapper(`mvnw.cmd`) 사용 예정 → 불필요 |
+| Android Studio | **없음** | Phase 6 전에 설치 필요 |
+| Flutter | 없음 | Android 네이티브 앱으로 진행 → 불필요 |
 
 ## Phase 1 — 개발환경 확인 방법 (Windows)
 
