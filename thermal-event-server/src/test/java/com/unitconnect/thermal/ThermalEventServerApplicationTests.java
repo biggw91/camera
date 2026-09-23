@@ -1,0 +1,30 @@
+package com.unitconnect.thermal;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+/**
+ * TEST 01 서버 정상 실행: 서버가 오류 없이 켜지고 /api/health 가 UP 을 돌려주는지 확인합니다.
+ */
+@SpringBootTest
+@AutoConfigureMockMvc
+class ThermalEventServerApplicationTests {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    void healthReturnsUp() throws Exception {
+        mockMvc.perform(get("/api/health"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("UP"))
+                .andExpect(jsonPath("$.application").value("thermal-event-server"));
+    }
+}

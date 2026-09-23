@@ -23,7 +23,7 @@ Honeywell HT34B-423I 열화상 카메라 기반, **NVR 없는** 열화상 이벤
 
 ## 폴더 구조 (제안)
 
-현재는 `tools/`, `README.md`, `.gitignore`, `.env.example` 만 만들었습니다.
+현재는 `tools/`, `thermal-event-server/`(Phase 2), `README.md`, `.gitignore`, `.env.example` 까지 만들었습니다.
 나머지 폴더는 해당 Phase에서 만듭니다.
 
 ```
@@ -36,14 +36,17 @@ camera/                                  ← Git 저장소 최상위
 │  └─ windows/
 │     ├─ check-env.bat                   ← [Phase 1] 개발환경 확인 (더블클릭 실행)
 │     ├─ check-env.ps1                   ← [Phase 1] 위 bat 이 실행하는 실제 스크립트
+│     ├─ run-server.bat                  ← [Phase 2] 서버 실행 (더블클릭)
 │     └─ check-camera-network.ps1        ← [Phase 7 예정] ping / HTTP / RTSP 확인
 │
 ├─ docs/                                 ← [Phase 7~8 예정]
 │  ├─ camera-webui-checklist.md          ← 카메라 웹 관리자 메뉴 확인 체크리스트
 │  └─ test-scenarios.md                  ← TEST 01 ~ TEST 14
 │
-├─ thermal-event-server/                 ← [Phase 2 예정] Spring Boot 서버
-│  ├─ pom.xml  (또는 build.gradle)
+├─ thermal-event-server/                 ← [Phase 2] Spring Boot 서버
+│  ├─ pom.xml                            ← 사용 라이브러리 목록 (Maven)
+│  ├─ mvnw.cmd                           ← Maven 자동 다운로드·실행 스크립트
+│  ├─ src/main/resources/application.yml ← 서버 설정
 │  └─ src/main/java/com/unitconnect/thermal/
 │     ├─ controller/    ← REST API(외부에서 호출하는 주소) 입구
 │     ├─ service/       ← 실제 업무 처리 (이벤트 저장, 중복 방지, Push 호출)
@@ -57,8 +60,7 @@ camera/                                  ← Git 저장소 최상위
 │
 ├─ android-app/                          ← [Phase 6 예정] Unitconnect Thermal Monitor 앱
 │
-└─ docker/                               ← [Phase 3 예정, 선택] MySQL 을 Docker 로 띄울 경우
-   └─ docker-compose.yml
+└─ (docker/ 는 만들지 않음 — PC 에 MySQL 8.0 이 직접 설치되어 있어 불필요)
 ```
 
 ---
@@ -68,7 +70,7 @@ camera/                                  ← Git 저장소 최상위
 | Phase | 내용 | 상태 |
 |---|---|---|
 | 1 | 개발환경 확인 | **완료** (2026-09-23) |
-| 2 | Spring Boot 서버 생성 | 대기 |
+| 2 | Spring Boot 서버 생성 | **완료** – PC 실행 확인 필요 |
 | 3 | MySQL 연결 | 대기 |
 | 4 | Test Event API | 대기 |
 | 5 | Firebase FCM | 대기 |
@@ -80,6 +82,34 @@ camera/                                  ← Git 저장소 최상위
 | 11 | 관리자 화면 | 대기 |
 
 ---
+
+## Phase 2 — 서버 실행 방법 (Windows)
+
+- Spring Boot 4.1.1 / Java 17 / Maven Wrapper(Maven 3.9.16 자동 다운로드)
+- 현재 기능: `GET /api/health` (서버 상태 확인) 하나
+- DB(MySQL)·FCM 은 아직 연결하지 않았습니다 (Phase 3, 5)
+
+1. 최신 파일 받기 (저장소 폴더에서):
+   ```bat
+   git pull
+   ```
+2. `tools\windows\run-server.bat` 더블클릭
+   (또는 cmd 에서 `cd thermal-event-server` 후 `mvnw.cmd spring-boot:run`)
+   - 처음 한 번은 Maven·라이브러리를 인터넷에서 받느라 몇 분 걸립니다.
+3. 창에 아래 로그가 나오면 성공입니다:
+   ```
+   [SERVER] thermal-event-server started. health check: http://localhost:8080/api/health
+   ```
+4. 브라우저에서 http://localhost:8080/api/health 접속 → 아래처럼 나오면 **TEST 01 성공**
+   ```json
+   {"status":"UP","application":"thermal-event-server","serverTime":"..."}
+   ```
+5. 서버 끄기: 서버 창에서 `Ctrl + C`
+
+자동 테스트 실행: `cd thermal-event-server` 후 `mvnw.cmd test`
+
+포트 변경: 저장소 최상위에 `.env` 파일을 만들고 `SERVER_PORT=9090` 처럼 적습니다 (`.env.example` 참고).
+로그 파일: `thermal-event-server\logs\thermal-event-server.log`
 
 ## Phase 1 결과 (개발 PC, 2026-09-23)
 
