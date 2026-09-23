@@ -16,7 +16,31 @@ spring:
       - optional:file:../.env[.properties]
       - optional:file:.env[.properties]
 
-  # TODO(Phase 3): MySQL 접속 설정 (DB_HOST, DB_PORT, DB_NAME, DB_USERNAME, DB_PASSWORD)
+  # ----- MySQL 접속 (Phase 3) -----
+  # 아이디/비밀번호는 여기에 쓰지 않고 .env 의 DB_USERNAME / DB_PASSWORD 로 넣습니다.
+  # useSSL=false, allowPublicKeyRetrieval=true 는 같은 PC/사무실 내부 테스트용 설정입니다.
+  # TODO(상용 전환): DB 가 다른 서버로 분리되면 SSL 사용으로 변경
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:thermal_event}?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true
+    username: ${DB_USERNAME:}
+    password: ${DB_PASSWORD:}
+    hikari:
+      # DB 가 꺼져 있을 때 오래 기다리지 않고 빨리 오류를 알려줍니다
+      connection-timeout: 5000
+
+  jpa:
+    # 테이블은 Flyway(SQL 파일)로만 만들고, JPA 는 테이블 구조가 맞는지 검사만 합니다
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
 
 server:
   port: ${SERVER_PORT:8080}

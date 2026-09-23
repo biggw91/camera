@@ -23,7 +23,7 @@ Honeywell HT34B-423I 열화상 카메라 기반, **NVR 없는** 열화상 이벤
 
 ## 폴더 구조 (제안)
 
-현재는 `tools/`, `thermal-event-server/`(Phase 2), `README.md`, `.gitignore`, `.env.example` 까지 만들었습니다.
+현재는 `tools/`, `thermal-event-server/`(Phase 2~3), `README.md`, `.gitignore`, `.env.example` 까지 만들었습니다.
 나머지 폴더는 해당 Phase에서 만듭니다.
 
 ```
@@ -37,6 +37,7 @@ camera/                                  ← Git 저장소 최상위
 │     ├─ check-env.bat                   ← [Phase 1] 개발환경 확인 (더블클릭 실행)
 │     ├─ check-env.ps1                   ← [Phase 1] 위 bat 이 실행하는 실제 스크립트
 │     ├─ run-server.bat                  ← [Phase 2] 서버 실행 (더블클릭)
+│     ├─ setup-db.bat / setup-db.ps1     ← [Phase 3] MySQL DB·전용 계정 생성 + .env 기록
 │     └─ check-camera-network.ps1        ← [Phase 7 예정] ping / HTTP / RTSP 확인
 │
 ├─ docs/                                 ← [Phase 7~8 예정]
@@ -47,6 +48,7 @@ camera/                                  ← Git 저장소 최상위
 │  ├─ pom.xml                            ← 사용 라이브러리 목록 (Maven)
 │  ├─ mvnw.cmd                           ← Maven 자동 다운로드·실행 스크립트
 │  ├─ src/main/resources/application.yml ← 서버 설정
+│  ├─ src/main/resources/db/migration/   ← [Phase 3] 테이블 생성 SQL (Flyway 가 자동 실행)
 │  └─ src/main/java/com/unitconnect/thermal/
 │     ├─ controller/    ← REST API(외부에서 호출하는 주소) 입구
 │     ├─ service/       ← 실제 업무 처리 (이벤트 저장, 중복 방지, Push 호출)
@@ -71,7 +73,7 @@ camera/                                  ← Git 저장소 최상위
 |---|---|---|
 | 1 | 개발환경 확인 | **완료** (2026-09-23) |
 | 2 | Spring Boot 서버 생성 | **완료** – PC 실행 확인 필요 |
-| 3 | MySQL 연결 | 대기 |
+| 3 | MySQL 연결 | **완료** – PC 실행 확인 필요 |
 | 4 | Test Event API | 대기 |
 | 5 | Firebase FCM | 대기 |
 | 6 | Android Push 수신 | 대기 |
@@ -82,6 +84,35 @@ camera/                                  ← Git 저장소 최상위
 | 11 | 관리자 화면 | 대기 |
 
 ---
+
+## Phase 3 — MySQL 연결 방법 (Windows)
+
+- DB 이름 `thermal_event`, 서버 전용 계정 `thermal_app` (root 계정은 서버에 쓰지 않음)
+- 테이블: `camera`, `thermal_event`, `mobile_device` — 서버가 처음 켜질 때 자동 생성 (Flyway)
+- 테스트용 카메라 `CAM-001` 1대가 자동 등록됩니다 (IP 는 Phase 7 에서 입력)
+- DB 에 저장되는 시간은 모두 **UTC**(세계 표준시)입니다. **한국시간 = UTC + 9시간**
+
+1. 최신 파일 받기: 저장소 폴더에서 `git pull`
+2. `tools\windows\setup-db.bat` 더블클릭
+   - 서버 전용 계정의 **새 비밀번호**를 정해서 두 번 입력 (화면에 안 보임)
+   - 이어서 `Enter password:` 가 나오면 **MySQL root 비밀번호** 입력 (MySQL 설치 때 정한 것)
+   - `OK: database=thermal_event` 와 `.env 파일에 DB 접속 정보를 기록했습니다` 가 나오면 성공
+   - 비밀번호는 저장소 최상위 `.env` 에만 저장되며 Git 에 올라가지 않습니다
+3. `tools\windows\run-server.bat` 더블클릭 → 아래 로그가 나오면 성공
+   ```
+   [DB] connected: MySQL 8.0.xx url=jdbc:mysql://localhost:3306/thermal_event user=thermal_app@localhost
+   [DB] registered cameras=1
+   [SERVER] thermal-event-server started. ...
+   ```
+4. 브라우저에서 http://localhost:8080/api/health → `"database":"UP"` 이면 **TEST 02 성공**
+
+서버가 켜지지 않으면 창에 나오는 `APPLICATION FAILED TO START` 아래의 한국어 안내를 확인하세요.
+
+| 안내 문구 | 해결 방법 |
+|---|---|
+| MySQL 서버에 연결할 수 없습니다 | `services.msc` 에서 `MySQL80` 이 실행 중인지 확인 |
+| MySQL 로그인 실패 | `setup-db.bat` 을 다시 실행 (비밀번호 새로 설정) |
+| DB 가 없거나 ... 권한이 없습니다 | `setup-db.bat` 실행, `.env` 의 `DB_NAME` 확인 |
 
 ## Phase 2 — 서버 실행 방법 (Windows)
 
